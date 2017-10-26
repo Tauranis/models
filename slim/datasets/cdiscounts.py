@@ -29,11 +29,12 @@ from datasets import dataset_utils
 
 slim = tf.contrib.slim
 
-_FILE_PATTERN = 'cdiscount_%s_*.tfrecord'
+#_FILE_PATTERN = 'cdiscount_%s_*.tfrecord'
+_FILE_PATTERN = 'cdiscount_%s*.tfrecord.gz'
 
-SPLITS_TO_SIZES = {'train': 3320, 'validation': 350} # TODO: ALTERAR
+SPLITS_TO_SIZES = {'train': 110, 'validation': 10} # TODO: ALTERAR
 
-_NUM_CLASSES = 5270 # Alterado
+_NUM_CLASSES = 36#5270 # Alterado
 
 _ITEMS_TO_DESCRIPTIONS = {
     'image': 'A RGB image.',
@@ -65,10 +66,13 @@ def get_split(split_name, dataset_dir, file_pattern=None, reader=None):
   # Allowing None in the signature so that dataset_factory can use the default.
   if reader is None:
     reader = tf.TFRecordReader
+    
 
   keys_to_features = {
       'image/encoded': tf.FixedLenFeature((), tf.string, default_value=''),
       'image/format': tf.FixedLenFeature((), tf.string, default_value='jpg'),
+      'image/height': tf.FixedLenFeature((), tf.int64, default_value=180),
+      'image/width': tf.FixedLenFeature((), tf.int64, default_value=180),
       'image/class/label': tf.FixedLenFeature(
           [], tf.int64, default_value=tf.zeros([], dtype=tf.int64)),
   }
@@ -76,6 +80,8 @@ def get_split(split_name, dataset_dir, file_pattern=None, reader=None):
   items_to_handlers = {
       'image': slim.tfexample_decoder.Image(),
       'label': slim.tfexample_decoder.Tensor('image/class/label'),
+      'height': slim.tfexample_decoder.Tensor('image/height'),
+      'width': slim.tfexample_decoder.Tensor('image/width'),
   }
 
   decoder = slim.tfexample_decoder.TFExampleDecoder(
